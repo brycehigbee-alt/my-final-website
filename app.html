@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Team Guessing Game</title>
+
+    <!-- All styles for this app are in this <style> block -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #003366, #0066cc);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            background-color: #ffffff;
+            color: #333333;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        p {
+            margin: 8px 0;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #guessButton {
+            background-color: #0066cc;
+            color: #ffffff;
+        }
+
+        #resetButton {
+            background-color: #cccccc;
+            color: #333333;
+            margin-left: 5px;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+        }
+
+        #attempts {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #555555;
+        }
+
+        #history {
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        #history span {
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 3px;
+            padding: 3px 6px;
+            border-radius: 6px;
+            background-color: #e6f0ff;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .small-label {
+            font-size: 13px;
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1>NFL Team Guessing Game</h1>
+        <p class="small-label">
+            I am thinking of one of the 32 NFL teams.  
+            Pick a team and see if you can guess it!
+        </p>
+
+        <label for="teamSelect" class="small-label">Choose your guess:</label>
+        <select id="teamSelect">
+            <option value="">-- Select a team --</option>
+            <option>Arizona Cardinals</option>
+            <option>Atlanta Falcons</option>
+            <option>Baltimore Ravens</option>
+            <option>Buffalo Bills</option>
+            <option>Carolina Panthers</option>
+            <option>Chicago Bears</option>
+            <option>Cincinnati Bengals</option>
+            <option>Cleveland Browns</option>
+            <option>Dallas Cowboys</option>
+            <option>Denver Broncos</option>
+            <option>Detroit Lions</option>
+            <option>Green Bay Packers</option>
+            <option>Houston Texans</option>
+            <option>Indianapolis Colts</option>
+            <option>Jacksonville Jaguars</option>
+            <option>Kansas City Chiefs</option>
+            <option>Las Vegas Raiders</option>
+            <option>Los Angeles Chargers</option>
+            <option>Los Angeles Rams</option>
+            <option>Miami Dolphins</option>
+            <option>Minnesota Vikings</option>
+            <option>New England Patriots</option>
+            <option>New Orleans Saints</option>
+            <option>New York Giants</option>
+            <option>New York Jets</option>
+            <option>Philadelphia Eagles</option>
+            <option>Pittsburgh Steelers</option>
+            <option>San Francisco 49ers</option>
+            <option>Seattle Seahawks</option>
+            <option>Tampa Bay Buccaneers</option>
+            <option>Tennessee Titans</option>
+            <option>Washington Commanders</option>
+        </select>
+
+        <br>
+        <button id="guessButton">Guess Team</button>
+        <button id="resetButton">Reset Game</button>
+
+        <div id="message"></div>
+        <div id="attempts"></div>
+        <div id="history"></div>
+
+        <a href="scratch.html">Back to Scratch Page</a>
+    </div>
+
+    <!-- All JavaScript for this app is in this <script> block -->
+<script>
+    const teams = [
+        "Arizona Cardinals","Atlanta Falcons","Baltimore Ravens","Buffalo Bills",
+        "Carolina Panthers","Chicago Bears","Cincinnati Bengals","Cleveland Browns",
+        "Dallas Cowboys","Denver Broncos","Detroit Lions","Green Bay Packers",
+        "Houston Texans","Indianapolis Colts","Jacksonville Jaguars","Kansas City Chiefs",
+        "Las Vegas Raiders","Los Angeles Chargers","Los Angeles Rams","Miami Dolphins",
+        "Minnesota Vikings","New England Patriots","New Orleans Saints","New York Giants",
+        "New York Jets","Philadelphia Eagles","Pittsburgh Steelers","San Francisco 49ers",
+        "Seattle Seahawks","Tampa Bay Buccaneers","Tennessee Titans","Washington Commanders"
+    ];
+
+    // Conference/division info + a "buddy team" from same division for hints
+    const teamInfo = {
+        "Arizona Cardinals": { conference: "NFC", division: "West", buddy: "Seattle Seahawks" },
+        "Atlanta Falcons": { conference: "NFC", division: "South", buddy: "New Orleans Saints" },
+        "Baltimore Ravens": { conference: "AFC", division: "North", buddy: "Cincinnati Bengals" },
+        "Buffalo Bills": { conference: "AFC", division: "East", buddy: "Miami Dolphins" },
+        "Carolina Panthers": { conference: "NFC", division: "South", buddy: "Tampa Bay Buccaneers" },
+        "Chicago Bears": { conference: "NFC", division: "North", buddy: "Green Bay Packers" },
+        "Cincinnati Bengals": { conference: "AFC", division: "North", buddy: "Baltimore Ravens" },
+        "Cleveland Browns": { conference: "AFC", division: "North", buddy: "Pittsburgh Steelers" },
+        "Dallas Cowboys": { conference: "NFC", division: "East", buddy: "Philadelphia Eagles" },
+        "Denver Broncos": { conference: "AFC", division: "West", buddy: "Kansas City Chiefs" },
+        "Detroit Lions": { conference: "NFC", division: "North", buddy: "Minnesota Vikings" },
+        "Green Bay Packers": { conference: "NFC", division: "North", buddy: "Chicago Bears" },
+        "Houston Texans": { conference: "AFC", division: "South", buddy: "Indianapolis Colts" },
+        "Indianapolis Colts": { conference: "AFC", division: "South", buddy: "Houston Texans" },
+        "Jacksonville Jaguars": { conference: "AFC", division: "South", buddy: "Tennessee Titans" },
+        "Kansas City Chiefs": { conference: "AFC", division: "West", buddy: "Las Vegas Raiders" },
+        "Las Vegas Raiders": { conference: "AFC", division: "West", buddy: "Kansas City Chiefs" },
+        "Los Angeles Chargers": { conference: "AFC", division: "West", buddy: "Denver Broncos" },
+        "Los Angeles Rams": { conference: "NFC", division: "West", buddy: "San Francisco 49ers" },
+        "Miami Dolphins": { conference: "AFC", division: "East", buddy: "Buffalo Bills" },
+        "Minnesota Vikings": { conference: "NFC", division: "North", buddy: "Detroit Lions" },
+        "New England Patriots": { conference: "AFC", division: "East", buddy: "New York Jets" },
+        "New Orleans Saints": { conference: "NFC", division: "South", buddy: "Atlanta Falcons" },
+        "New York Giants": { conference: "NFC", division: "East", buddy: "Dallas Cowboys" },
+        "New York Jets": { conference: "AFC", division: "East", buddy: "New England Patriots" },
+        "Philadelphia Eagles": { conference: "NFC", division: "East", buddy: "Dallas Cowboys" },
+        "Pittsburgh Steelers": { conference: "AFC", division: "North", buddy: "Cleveland Browns" },
+        "San Francisco 49ers": { conference: "NFC", division: "West", buddy: "Seattle Seahawks" },
+        "Seattle Seahawks": { conference: "NFC", division: "West", buddy: "San Francisco 49ers" },
+        "Tampa Bay Buccaneers": { conference: "NFC", division: "South", buddy: "Carolina Panthers" },
+        "Tennessee Titans": { conference: "AFC", division: "South", buddy: "Jacksonville Jaguars" },
+        "Washington Commanders": { conference: "NFC", division: "East", buddy: "Philadelphia Eagles" }
+    };
+
+    let secretTeam = "";
+    let attempts = 0;
+    let gameOver = false;
+
+    const teamSelect = document.getElementById('teamSelect');
+    const messageEl = document.getElementById('message');
+    const attemptsEl = document.getElementById('attempts');
+    const historyEl = document.getElementById('history');
+
+    function startGame() {
+        const index = Math.floor(Math.random() * teams.length);
+        secretTeam = teams[index];
+        attempts = 0;
+        gameOver = false;
+
+        messageEl.textContent = "Game started! Pick a team from the list.";
+        attemptsEl.textContent = "";
+        historyEl.textContent = "";
+        teamSelect.value = "";
+    }
+
+    function handleGuess() {
+        if (gameOver) {
+            messageEl.textContent = 'The game is over. Press "Reset Game" to play again.';
+            return;
+        }
+
+        const guess = teamSelect.value;
+
+        if (!guess) {
+            messageEl.textContent = "Please choose a team before guessing.";
+            return;
+        }
+
+        attempts++;
+        attemptsEl.textContent = "Attempts: " + attempts;
+
+        // Add guess to history
+        const span = document.createElement('span');
+        span.textContent = guess;
+        historyEl.appendChild(span);
+
+        if (guess === secretTeam) {
+            messageEl.textContent = "🎉 Correct! The secret team was " + secretTeam + ".";
+            gameOver = true;
+            return;
+        }
+
+        // Base miss message
+        let text = "Nope, " + guess + " is not the secret team. Try again!";
+
+        // Add progressively better hints
+        const info = teamInfo[secretTeam];
+        if (attempts === 3) {
+            text += " Hint: This team is in the " + info.conference + ".";
+        } else if (attempts === 5) {
+            text += " Extra hint: They are in the same division as the " + info.buddy + ".";
+        }
+
+        messageEl.textContent = text;
+    }
+
+    document.getElementById('guessButton').addEventListener('click', handleGuess);
+    document.getElementById('resetButton').addEventListener('click', startGame);
+
+    // Start game on page load
+    startGame();
+</script>
+
+    </script>
+</body>
+</html>
